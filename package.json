@@ -1,11 +1,13 @@
+// FILE: package.json
 {
-  "name": "functions",
+  "name": "exzet-functions",
   "private": true,
   "type": "module",
   "main": "index.js",
   "engines": { "node": "20" },
   "dependencies": {
     "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.6.0"
+    "firebase-functions": "^5.3.0",
+    "openai": "^4.58.1"
   }
 }
