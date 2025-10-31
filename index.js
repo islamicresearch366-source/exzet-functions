@@ -1,17 +1,13 @@
 // === FILE: functions/index.js ===
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import OpenAI from "openai";
-import fetch from "node-fetch";
 
-admin.initializeApp();
+admin.initializeApp(); // ✅ works in ESM
 const db = admin.firestore();
 const storage = admin.storage();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// 🔹 Generate product image from prompt
 export const generateProductImage = functions
   .region("asia-south1")
   .https.onCall(async (data, context) => {
@@ -25,7 +21,6 @@ export const generateProductImage = functions
 
       const imageBase64 = response.data[0].b64_json;
       const buffer = Buffer.from(imageBase64, "base64");
-
       const filePath = `generated/${Date.now()}.png`;
       const file = storage.bucket().file(filePath);
       await file.save(buffer, { contentType: "image/png" });
