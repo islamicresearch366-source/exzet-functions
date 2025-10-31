@@ -1,3 +1,6 @@
+# Keep ONLY this workflow; delete old/duplicate workflows, commit, push
+New-Item -ItemType Directory -Force -Path ".github/workflows" | Out-Null
+Set-Content -Encoding UTF8 ".github/workflows/firebase-functions-deploy.yml" (@'
 name: Auto Deploy Firebase Functions
 on:
   push:
@@ -27,3 +30,10 @@ jobs:
       - env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: npx -y firebase-tools deploy --only functions --project bestlogin-e1c74
+'@)
+
+Get-ChildItem ".github/workflows" -File | Where-Object { $_.Name -ne "firebase-functions-deploy.yml" } | Remove-Item -Force
+
+git add -A
+git commit -m "ci: single workflow + concurrency; run npm in functions/"
+git push
