@@ -1,26 +1,43 @@
-import { setGlobalOptions } from "firebase-functions/v2/options";
-import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
+// === FILE: functions/index.js ===
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+import OpenAI from "openai";
+import fetch from "node-fetch";
 
-setGlobalOptions({ region: "asia-south1", timeoutSeconds: 60, memory: "512MiB" });
-
-initializeApp();
-const db = getFirestore();
-const storage = getStorage();
-
-export const ping = onCall((request) => ({
-  ok: true,
-  uid: request.auth?.uid ?? null,
-  ts: Date.now()
-}));
-
-export const hello = onRequest((req, res) => {
-  res.status(200).send("OK");
+admin.initializeApp();
+const db = admin.firestore();
+const storage = admin.storage();
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const whoami = onCall((request) => {
-  if (!request.auth) throw new HttpsError("unauthenticated", "Sign in required");
-  return { uid: request.auth.uid };
-});
+// 🔹 Generate product image from prompt
+export const generateProductImage = functions
+  .region("asia-south1")
+  .https.onCall(async (data, context) => {
+    try {
+      const prompt = data.prompt || "Studio photo of a plain white t-shirt on mannequin";
+      const response = await openai.images.generate({
+        model: "gpt-image-1",
+        prompt,
+        size: "1024x1536",
+      });
+
+      const imageBase64 = response.data[0].b64_json;
+      const buffer = Buffer.from(imageBase64, "base64");
+
+      const filePath = `generated/${Date.now()}.png`;
+      const file = storage.bucket().file(filePath);
+      await file.save(buffer, { contentType: "image/png" });
+
+      const [url] = await file.getSignedUrl({
+        action: "read",
+        expires: "03-09-2099",
+      });
+
+      return { success: true, url };
+    } catch (error) {
+      console.error("Image generation error:", error);
+      return { success: false, error: error.message };
+    }
+  });
