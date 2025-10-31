@@ -1,12 +1,15 @@
-// === FILE: functions/index.js ===
 import * as functions from "firebase-functions";
 import admin from "firebase-admin";
 import OpenAI from "openai";
 
-admin.initializeApp(); // ✅ works in ESM
+admin.initializeApp();
+
+// 🔹 Secret manager থেকে OpenAI key নাও
+const OPENAI_API_KEY = functions.config().openai?.key || process.env.OPENAI_API_KEY;
+
 const db = admin.firestore();
 const storage = admin.storage();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export const generateProductImage = functions
   .region("asia-south1")
