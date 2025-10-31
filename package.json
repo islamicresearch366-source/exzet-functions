@@ -1,14 +1,12 @@
-
-// FILE: package.json
 {
-  "name": "functions",
+  "name": "exzet-functions",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "engines": { "node": "22" },
-  "main": "index.js",
-  "dependencies": {
-    "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.0.0"
-  }
+  "workspaces": [
+    "functions"
+  ],
+  "engines": {
+    "node": "20"
+  },
+  "packageManager": "npm@10.9.0"
 }
