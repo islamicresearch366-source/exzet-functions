@@ -1,10 +1,14 @@
-name: Deploy Firebase Functions
+name: Auto Deploy Firebase Functions
 on:
   push:
     branches: [ "main" ]
     paths:
       - "functions/**"
       - ".github/workflows/firebase-functions-deploy.yml"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,6 +20,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install
+          cache: "npm"
+          cache-dependency-path: "functions/package-lock.json"
+      - run: npm ci --no-audit --no-fund
       - run: npm run build --if-present
-      - run: npx firebase-tools deploy --only functions --project bestlogin-e1c74 --token "${{ secrets.FIREBASE_TOKEN }}"
+      - env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npx -y firebase-tools deploy --only functions --project bestlogin-e1c74
