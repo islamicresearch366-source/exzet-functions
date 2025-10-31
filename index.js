@@ -4,15 +4,16 @@ import OpenAI from "openai";
 
 admin.initializeApp();
 
-// 🔹 Secret manager থেকে OpenAI key নাও
+// 🔹 Secret Manager থেকে Key পড়া
 const OPENAI_API_KEY = functions.config().openai?.key || process.env.OPENAI_API_KEY;
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 const db = admin.firestore();
 const storage = admin.storage();
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+// ✅ নতুন region syntax
 export const generateProductImage = functions
-  .region("asia-south1")
+  .runWith({ region: "asia-south1" })
   .https.onCall(async (data, context) => {
     try {
       const prompt = data.prompt || "Studio photo of a plain white t-shirt on mannequin";
