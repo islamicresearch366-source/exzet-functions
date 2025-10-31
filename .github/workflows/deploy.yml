@@ -19,7 +19,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd functions
           npm ci
 
       - name: Deploy to Firebase
